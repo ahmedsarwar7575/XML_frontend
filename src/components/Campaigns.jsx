@@ -248,11 +248,25 @@ function Campaigns() {
   };
 
   const handleToggleStatus = async (id, currentStatus) => {
-    const campaign = campaigns.find((c) => c.id === id);
+    const campaign = campaigns.find(c => c.id === id);
+    // Parse keywords into an array before sending
+    let keywordsArray = [];
+    if (campaign.keywords) {
+      if (Array.isArray(campaign.keywords)) {
+        keywordsArray = campaign.keywords;
+      } else if (typeof campaign.keywords === "string") {
+        try {
+          keywordsArray = JSON.parse(campaign.keywords);
+        } catch {
+          keywordsArray = campaign.keywords.split(",").map(k => k.trim()).filter(k => k);
+        }
+      }
+    }
     try {
       await api.put(`/campaigns/${id}`, {
         ...campaign,
-        status: currentStatus ? 0 : 1,
+        keywords: keywordsArray,
+        status: currentStatus ? 0 : 1
       });
       await fetchCampaigns();
     } catch (err) {
