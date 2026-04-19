@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../utils/auth";
+import api from "../api/axios";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -9,14 +10,19 @@ function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (username === "admin" && password === "password") {
-      login();
-      navigate("/");
-    } else {
-      setError("Invalid username or password. Please try again.");
+    try {
+      const res = await api.post("/auth/login", { username, password });
+      if (res.data.success) {
+        login();
+        navigate("/");
+      } else {
+        setError("Invalid credentials");
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || "Login failed");
     }
   };
 
@@ -29,13 +35,11 @@ function Login() {
         <p className="text-gray-400 text-center mb-8">
           Access the automation dashboard
         </p>
-
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-900/50 border border-red-600 text-red-200 text-sm text-center">
             {error}
           </div>
         )}
-
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-300 mb-2 text-sm font-medium">
@@ -45,8 +49,7 @@ function Login() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-600 rounded-lg py-2 px-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="admin"
+              className="w-full bg-slate-900 border border-slate-600 rounded-lg py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
@@ -58,14 +61,13 @@ function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-600 rounded-lg py-2 px-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="••••••"
+              className="w-full bg-slate-900 border border-slate-600 rounded-lg py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 shadow-lg shadow-blue-500/20"
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-2 px-4 rounded-lg transition shadow-lg shadow-blue-500/20"
           >
             Sign In
           </button>

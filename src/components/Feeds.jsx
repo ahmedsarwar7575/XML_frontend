@@ -16,10 +16,24 @@ function Feeds() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState(null);
+  const [timezone, setTimezone] = useState("UTC");
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   useEffect(() => {
+    fetchSettings();
     fetchFeeds();
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const res = await api.get("/settings");
+      setTimezone(res.data.timezone || "UTC");
+      setSettingsLoaded(true);
+    } catch (err) {
+      console.error("Failed to load settings", err);
+      setSettingsLoaded(true);
+    }
+  };
 
   const fetchFeeds = async () => {
     try {
@@ -29,6 +43,38 @@ function Feeds() {
     } catch (err) {
       setError(err.response?.data?.error || err.message);
     }
+  };
+
+  const formatDateInTimezone = (dateString) => {
+    if (!dateString) return "Never";
+    try {
+      const utcDate = new Date(dateString + " UTC"); // ensure UTC parsing
+      if (isNaN(utcDate.getTime())) return "Invalid date";
+      // Convert to target timezone using Intl
+      return new Intl.DateTimeFormat(undefined, {
+        timeZone: timezone,
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: false,
+      }).format(utcDate);
+    } catch (e) {
+      return new Date(dateString).toLocaleString();
+    }
+  };
+  const formatRefreshInterval = (hours) => {
+    if (!hours || hours === 0) return "Never";
+    if (hours >= 1 && (hours * 60) % 60 === 0 && hours <= 24) {
+      return `${hours} hour${hours > 1 ? "s" : ""}`;
+    }
+    const minutes = hours * 60;
+    if (minutes < 60 && minutes % 1 === 0) {
+      return `${minutes} minute${minutes > 1 ? "s" : ""}`;
+    }
+    return `${hours} hours`;
   };
 
   const resetForm = () => {
@@ -82,11 +128,7 @@ function Feeds() {
     let refreshHours = feed.refresh_interval_hours || 0;
     let refreshValue = refreshHours;
     let refreshUnit = "hours";
-    if (
-      refreshHours > 0 &&
-      (refreshHours * 60) % 1 === 0 &&
-      refreshHours * 60 <= 60
-    ) {
+    if (refreshHours > 0 && (refreshHours * 60) % 1 === 0 && refreshHours * 60 <= 60) {
       refreshValue = refreshHours * 60;
       refreshUnit = "minutes";
     }
@@ -110,18 +152,6 @@ function Feeds() {
     } catch (err) {
       setError(err.response?.data?.error || err.message);
     }
-  };
-
-  const formatRefreshInterval = (hours) => {
-    if (!hours || hours === 0) return "Never";
-    if (hours >= 1 && (hours * 60) % 60 === 0 && hours <= 24) {
-      return `${hours} hour${hours > 1 ? "s" : ""}`;
-    }
-    const minutes = hours * 60;
-    if (minutes < 60 && minutes % 1 === 0) {
-      return `${minutes} minute${minutes > 1 ? "s" : ""}`;
-    }
-    return `${hours} hours`;
   };
 
   return (
@@ -210,13 +240,26 @@ function Feeds() {
                       </div>
                       <div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-400">
                         <span>
-                          Created: {new Date(feed.created_at).toLocaleString()}
+                          Created:{" "}
+                          {settingsLoaded
+                            ? formatDateInTimezone(feed.created_at)
+                            : new Date(feed.created_at).toLocaleString()}
                         </span>
                         {feed.refresh_interval_hours > 0 && (
-                          <span className="text-blue-400">
-                            Auto-refresh:{" "}
-                            {formatRefreshInterval(feed.refresh_interval_hours)}
-                          </span>
+                          <>
+                            <span className="text-blue-400">
+                              Auto-refresh:{" "}
+                              {formatRefreshInterval(feed.refresh_interval_hours)}
+                            </span>
+                            {feed.last_refresh_at && (
+                              <span className="text-blue-400">
+                                Last refreshed:{" "}
+                                {settingsLoaded
+                                  ? formatDateInTimezone(feed.last_refresh_at)
+                                  : new Date(feed.last_refresh_at).toLocaleString()}
+                              </span>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>

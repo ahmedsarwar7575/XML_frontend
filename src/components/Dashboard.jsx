@@ -33,26 +33,25 @@ function Dashboard() {
     successRate: 0,
     last7Days: [],
     topCampaigns: [],
+    recentLogs: [],
   });
-  const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchStats = async () => {
       try {
-        const statsRes = await api.get("/dashboard/stats");
-        setStats(statsRes.data);
-        const logsRes = await api.get("/clicks/logs/recent?limit=20");
-        setLogs(logsRes.data);
+        const res = await api.get("/dashboard/stats");
+        setStats(res.data);
         setError(null);
       } catch (err) {
+        console.error("Failed to fetch dashboard data", err);
         setError(err.response?.data?.error || err.message);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+    fetchStats();
   }, []);
 
   if (loading) {
@@ -79,6 +78,7 @@ function Dashboard() {
       },
     ],
   };
+
   const pieData = {
     labels: ["Success", "Failure"],
     datasets: [
@@ -109,6 +109,7 @@ function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {/* Total Campaigns Card */}
           <div className="bg-gradient-to-br from-slate-800 to-slate-700 backdrop-blur-sm border border-slate-600 rounded-xl overflow-hidden hover:border-blue-500 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
             <div className="p-6">
               <div className="flex items-start justify-between">
@@ -142,6 +143,7 @@ function Dashboard() {
             </div>
           </div>
 
+          {/* Total Clicks Card */}
           <div className="bg-gradient-to-br from-slate-800 to-slate-700 backdrop-blur-sm border border-slate-600 rounded-xl overflow-hidden hover:border-cyan-500 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10">
             <div className="p-6">
               <div className="flex items-start justify-between">
@@ -172,6 +174,7 @@ function Dashboard() {
             </div>
           </div>
 
+          {/* Success/Failure Card */}
           <div className="bg-gradient-to-br from-slate-800 to-slate-700 backdrop-blur-sm border border-slate-600 rounded-xl overflow-hidden hover:border-emerald-500 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
             <div className="p-6">
               <div className="flex items-start justify-between">
@@ -202,6 +205,7 @@ function Dashboard() {
             </div>
           </div>
 
+          {/* Success Rate Card */}
           <div className="bg-gradient-to-br from-slate-800 to-slate-700 backdrop-blur-sm border border-slate-600 rounded-xl overflow-hidden hover:border-purple-500 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
             <div className="p-6">
               <div className="flex items-start justify-between">
@@ -277,7 +281,8 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-800 to-slate-700 backdrop-blur-sm border border-slate-600 rounded-xl overflow-hidden p-6 mb-8">
+        {/* Top Campaigns */}
+        {/* <div className="bg-gradient-to-br from-slate-800 to-slate-700 backdrop-blur-sm border border-slate-600 rounded-xl overflow-hidden p-6 mb-8">
           <h2 className="text-xl font-bold text-white mb-4">
             Top Campaigns by Clicks
           </h2>
@@ -300,8 +305,9 @@ function Dashboard() {
               No click data available
             </p>
           )}
-        </div>
+        </div> */}
 
+        {/* Recent Logs with full details */}
         <div className="bg-gradient-to-br from-slate-800 to-slate-700 backdrop-blur-sm border border-slate-600 rounded-xl overflow-hidden p-6">
           <h2 className="text-xl font-bold text-white mb-4">
             Recent Click Logs
@@ -314,14 +320,17 @@ function Dashboard() {
                   <th className="pb-2">Campaign</th>
                   <th className="pb-2">Item</th>
                   <th className="pb-2">Status</th>
+                  <th className="pb-2">IP Address</th>
+                  <th className="pb-2">Country</th>
+                  <th className="pb-2">Browser</th>
                   <th className="pb-2">Final URL</th>
                   <th className="pb-2">Error</th>
                 </tr>
               </thead>
               <tbody>
-                {logs.map((log) => (
+                {stats.recentLogs.map((log) => (
                   <tr key={log.id} className="border-b border-slate-600/50">
-                    <td className="py-2 text-gray-300">
+                    <td className="py-2 text-gray-300 whitespace-nowrap">
                       {new Date(log.timestamp).toLocaleString()}
                     </td>
                     <td className="py-2 text-gray-300">{log.campaign_name}</td>
@@ -337,17 +346,33 @@ function Dashboard() {
                     >
                       {log.status}
                     </td>
+                    <td className="py-2 text-gray-300 font-mono text-xs">
+                      {log.ip_address || "-"}
+                    </td>
+                    <td className="py-2 text-gray-300">
+                      {log.ip_country || "-"}
+                    </td>
+                    <td className="py-2 text-gray-300 text-xs">
+                      {log.browser_type_used || "-"}
+                    </td>
                     <td className="py-2 text-gray-300 max-w-xs truncate">
-                      {log.final_url}
+                      <a
+                        href={log.final_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:underline"
+                      >
+                        {log.final_url}
+                      </a>
                     </td>
                     <td className="py-2 text-red-400 max-w-xs truncate">
                       {log.error_message}
                     </td>
                   </tr>
                 ))}
-                {logs.length === 0 && (
+                {stats.recentLogs.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="py-8 text-center text-gray-400">
+                    <td colSpan="9" className="py-8 text-center text-gray-400">
                       No logs available
                     </td>
                   </tr>

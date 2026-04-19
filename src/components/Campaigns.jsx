@@ -18,6 +18,7 @@ function Campaigns() {
     browser_rotation_strategy: "per-click",
     hourly_click_limit: 0,
     browser_profile: "desktop",
+    target_country: "Remote",
   });
   const [loading, setLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -63,6 +64,7 @@ function Campaigns() {
       browser_rotation_strategy: "per-click",
       hourly_click_limit: 0,
       browser_profile: "desktop",
+      target_country: "Remote",
     });
     setKeywordInput("");
     setEditingId(null);
@@ -150,6 +152,7 @@ function Campaigns() {
       browser_rotation_strategy: campaign.browser_rotation_strategy,
       hourly_click_limit: campaign.hourly_click_limit || 0,
       browser_profile: campaign.browser_profile || "desktop",
+      target_country: campaign.target_country || "Remote",
     });
     setKeywordInput("");
     setError(null);
@@ -178,6 +181,19 @@ function Campaigns() {
       setError(err.response?.data?.error || err.message);
     }
   };
+
+  const timezoneList = [
+    "Remote",
+    "Germany",
+    "United States",
+    "United Kingdom",
+    "France",
+    "Spain",
+    "Italy",
+    "Netherlands",
+    "Canada",
+    "Australia",
+  ];
 
   return (
     <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 min-h-screen">
@@ -283,6 +299,12 @@ function Campaigns() {
                             {campaign.browser_profile || "desktop"}
                           </span>
                         </div>
+                        <div className="text-gray-400">
+                          Target Country:{" "}
+                          <span className="text-gray-300 font-medium">
+                            {campaign.target_country || "Remote"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 flex-shrink-0 items-center">
@@ -353,9 +375,9 @@ function Campaigns() {
 
       {isDialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-xl shadow-2xl max-w-2xl w-full my-8">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 rounded-xl shadow-2xl max-w-3xl w-full my-8 max-h-[90vh] overflow-y-auto">
             <div className="p-8">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-6  z-10 pb-4">
                 <h2 className="text-2xl font-bold text-white">
                   {editingId ? "Edit Campaign" : "Create New Campaign"}
                 </h2>
@@ -608,7 +630,34 @@ function Campaigns() {
                     10 different fingerprints per device type
                   </p>
                 </div>
-                <div className="md:col-span-2 flex gap-3 pt-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-200 mb-2">
+                    Target Country
+                  </label>
+                  <select
+                    value={form.target_country}
+                    onChange={(e) =>
+                      setForm({ ...form, target_country: e.target.value })
+                    }
+                    className="w-full bg-slate-900 border border-slate-600 rounded-lg shadow-sm py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Remote">🌍 Remote (use feed country)</option>
+                    <option value="Germany">🇩🇪 Germany</option>
+                    <option value="United States">🇺🇸 United States</option>
+                    <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                    <option value="France">🇫🇷 France</option>
+                    <option value="Spain">🇪🇸 Spain</option>
+                    <option value="Italy">🇮🇹 Italy</option>
+                    <option value="Netherlands">🇳🇱 Netherlands</option>
+                    <option value="Canada">🇨🇦 Canada</option>
+                    <option value="Australia">🇦🇺 Australia</option>
+                  </select>
+                  <p className="text-xs text-gray-400 mt-1">
+                    If "Remote", uses the country from the feed item. Otherwise,
+                    forces this country.
+                  </p>
+                </div>
+                <div className="md:col-span-2 flex gap-3 pt-4  pb-4">
                   <button
                     type="button"
                     onClick={() => {
