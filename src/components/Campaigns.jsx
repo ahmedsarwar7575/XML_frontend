@@ -217,13 +217,15 @@ function Campaigns() {
         keywordsArray = campaign.keywords;
       } else if (typeof campaign.keywords === "string") {
         try {
-          const parsed = JSON.parse(campaign.keywords);
+          let parsed = JSON.parse(campaign.keywords);
+          // Handle double‑encoded JSON (e.g., "[\"frontend\"]" -> parse once gives array)
+          while (typeof parsed === "string") {
+            parsed = JSON.parse(parsed);
+          }
           keywordsArray = Array.isArray(parsed) ? parsed : [];
         } catch {
-          keywordsArray = campaign.keywords
-            .split(",")
-            .map((k) => k.trim())
-            .filter((k) => k);
+          // Fallback to comma‑separated
+          keywordsArray = campaign.keywords.split(",").map(k => k.trim()).filter(k => k);
         }
       }
     }
@@ -240,7 +242,7 @@ function Campaigns() {
       browser_rotation_strategy: campaign.browser_rotation_strategy,
       hourly_click_limit: campaign.hourly_click_limit || 0,
       browser_profile: campaign.browser_profile || "desktop",
-      target_country: campaign.target_country || "Remote",
+      target_country: campaign.target_country || "Remote"
     });
     setKeywordInput("");
     setError(null);
