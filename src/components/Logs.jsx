@@ -162,7 +162,8 @@ function Logs() {
                     <td className="px-6 py-3 text-gray-300 text-xs">
                       {log.browser_type_used || "-"}
                     </td>
-                    <td className="px-6 py-3 text-gray-300 max-w-xs truncate">
+                    {/* ✅ Full URL – wraps, never truncates */}
+                    <td className="px-6 py-3 max-w-xs text-gray-300 break-words whitespace-normal">
                       <a
                         href={log.final_url}
                         target="_blank"
