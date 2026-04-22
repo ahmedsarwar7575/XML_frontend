@@ -127,7 +127,7 @@ function Logs() {
                   <th className="px-6 py-3">IP Country</th>
                   <th className="px-6 py-3">Browser Type</th>
                   <th className="px-6 py-3">Final URL</th>
-                  <th className="px-6 py-3">Screenshot</th>
+                  {/* <th className="px-6 py-3">Screenshot</th> */}
                   <th className="px-6 py-3">Error</th>
                 </tr>
               </thead>
@@ -174,7 +174,7 @@ function Logs() {
                         {log.final_url}
                       </a>
                     </td>
-                    <td className="px-6 py-3">
+                    {/* <td className="px-6 py-3">
                       {log.screenshot_path ? (
                         <a
                           href={log.screenshot_path}
@@ -187,7 +187,7 @@ function Logs() {
                       ) : (
                         "-"
                       )}
-                    </td>
+                    </td> */}
                     <td className="px-6 py-3 text-red-400 max-w-xs truncate">
                       {log.error_message}
                     </td>
