@@ -7,7 +7,7 @@ import Campaigns from "./components/Campaigns";
 import Proxies from "./components/Proxies";
 import Logs from "./components/Logs";
 import Settings from "./components/Setting";
-
+import Landing from "./components/Landing";
 const PrivateRoute = ({ children }) => {
   const [cookies] = useCookies(["adminAuth"]);
   const isAuth = !!cookies.adminAuth;
@@ -20,8 +20,9 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Landing />} />
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <PrivateRoute>
                 <Dashboard />

@@ -17,7 +17,7 @@ function Login() {
       const res = await api.post("/auth/login", { username, password });
       if (res.data.success) {
         login();
-        navigate("/");
+        navigate("/dashboard");
       } else {
         setError("Invalid credentials");
       }
