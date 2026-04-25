@@ -7,7 +7,7 @@ import Campaigns from "./components/Campaigns";
 import Proxies from "./components/Proxies";
 import Logs from "./components/Logs";
 import Settings from "./components/Setting";
-import Landing from "./components/Landing";
+import {Landing} from "./components/Landing";
 const PrivateRoute = ({ children }) => {
   const [cookies] = useCookies(["adminAuth"]);
   const isAuth = !!cookies.adminAuth;
