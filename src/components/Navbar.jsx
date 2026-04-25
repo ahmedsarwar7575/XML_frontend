@@ -13,7 +13,7 @@ function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   const navLinks = [
-    { path: "/", label: "Dashboard" },
+    { path: "/dashboard", label: "Dashboard" },
     { path: "/feeds", label: "Feeds" },
     { path: "/campaigns", label: "Campaigns" },
     { path: "/proxies", label: "Proxies" },
