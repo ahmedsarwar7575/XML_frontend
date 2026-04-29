@@ -42,6 +42,59 @@ function Logs() {
     return true;
   });
 
+  const ScreenshotCell = ({ src, alt }) => {
+    const [imgLoading, setImgLoading] = useState(true);
+    const [imgError, setImgError] = useState(false);
+
+    useEffect(() => {
+      setImgLoading(true);
+      setImgError(false);
+    }, [src]);
+
+    return (
+      <div className="relative w-60 h-60 rounded-md overflow-hidden bg-slate-800 border border-slate-600">
+        {imgLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-800">
+            <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        {imgError && !imgLoading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800 text-gray-400 text-xs p-2 text-center">
+            <svg className="w-8 h-8 mb-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Failed to load
+            <button
+              onClick={() => {
+                setImgError(false);
+                setImgLoading(true);
+                const img = new Image();
+                img.src = src;
+                img.onload = () => { setImgLoading(false); setImgError(false); };
+                img.onerror = () => { setImgLoading(false); setImgError(true); };
+              }}
+              className="mt-2 text-xs text-blue-400 hover:underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+        <img
+          src={src}
+          alt={alt}
+          className={`w-full h-full object-cover transition-opacity duration-200 ${
+            imgLoading || imgError ? 'opacity-0' : 'opacity-100'
+          }`}
+          onLoad={() => setImgLoading(false)}
+          onError={() => {
+            setImgLoading(false);
+            setImgError(true);
+          }}
+        />
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 min-h-screen">
@@ -129,7 +182,7 @@ function Logs() {
                   <th className="px-6 py-3">Final URL</th>
                   <th className="px-6 py-3">Screenshot</th>
                   <th className="px-6 py-3">Error</th>
-                </tr>
+                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-600/50">
                 {filteredLogs.map((log) => (
@@ -173,15 +226,14 @@ function Logs() {
                         {log.final_url}
                       </a>
                     </td>
-                    <td className="px-6 py-3">
+                    <td className="px-6 py-3 align-top">
                       {log.screenshot_path ? (
-                        <img
-                        className="w-60 h-60 object-cover rounded-md"
-                          src={"https://peimark.com/api/" + log.screenshot_path}
-                          alt="nothing"
+                        <ScreenshotCell
+                          src={`https://peimark.com/api/${log.screenshot_path}`}
+                          alt={`Screenshot for ${log.item_title || log.campaign_name || 'click'}`}
                         />
                       ) : (
-                        "-"
+                        <span className="text-gray-500 text-sm">—</span>
                       )}
                     </td>
                     <td className="px-6 py-3 text-red-400 max-w-xs truncate">
@@ -191,10 +243,7 @@ function Logs() {
                 ))}
                 {filteredLogs.length === 0 && (
                   <tr>
-                    <td
-                      colSpan="9"
-                      className="px-6 py-12 text-center text-gray-400"
-                    >
+                    <td colSpan="10" className="px-6 py-12 text-center text-gray-400">
                       No logs match your filters
                     </td>
                   </tr>
